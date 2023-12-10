@@ -1,0 +1,3 @@
+BIBLIOTECAS USADAS:
+>Flask
+>Numpy
