@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GUI Simplex</title>
+    <style>
+        .tabela-estilizada {
+            /* border-collapse: collapse; */
+            width: 50%;
+            margin-top: 100px;
+            margin-left: auto;
+            margin-right: auto;
+            margin-bottom: 50px;
+            vertical-align: middle;
+        }
+
+        .tabela-estilizada th,
+        .tabela-estilizada td {
+            /* border: 1px solid #ddd; */
+            padding: 8px;
+            text-align: center;
+        }
+
+        .tabela-estilizada input {
+            width: 100%;
+        }
+
+        .gerarBotao {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            outline: none;
+            color: #fff;
+            background-color: #ff6969;
+            border: none;
+            border-radius: 5px;
+            box-shadow: 0 5px 10px rgba(255, 105, 180, 0.2);
+        }
+        .gerarBotao:hover{
+            transform: scale(1.03);
+        }
+        .calcularBotao {
+            /* right: 0;
+            bottom: 0;
+            position: fixed; */
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            outline: none;
+            color: #553232;
+            background-color: #ffd1d1;
+            border: none;
+            border-radius: 5px;
+            box-shadow: 0 5px 10px rgba(255, 163, 209, 0.2);
+        }
+        .calcularBotao:hover{
+            transform: scale(1.03);
+        }
+        #oitenta-e-cinco {
+            width: 100%;
+            height: 85%;
+            /* margin: 15px; */
+        }
+        #rodape {
+            background-color: #ff6969; /* Cor cinza */
+            /* padding: 90px; */
+            /* height: 90px; */
+            text-align: left;
+            margin-top: auto;
+        }
+        #resposta-rodape {
+            background-color: #ffd1d1; 
+            padding: 7px;
+            padding-left: 25px;
+            height: 166px;
+            /* text-align:left; */
+        }
+        #cabecalho-rodape {
+            /* width: 100%; */
+            padding: 10px;
+            font-size:25px;
+            text-align: left;
+            margin-left: 10px;
+        } 
+        #cabecalho-rodape-titulo {
+            padding: 10px;
+        }
+        #tabelaForm {
+            margin: 25px;
+            margin-left: 25px;
+            padding: 0px;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh; /* Garante que o body ocupe pelo menos 100% da altura da tela */
+        }
+        input {
+            min-width: 30px;
+            padding: 5px;
+        }
+        #cabecalho {
+            /* height: 50px; */
+            text-align: center;
+            text-wrap: wrap;
+            text-transform: uppercase;
+            background-color: #ff6969;
+        }
+        #coef-var {
+            margin: 3px;
+        }
+        #select-fotype {
+            padding: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="cabecalho">
+        <h1>Calcular PPL - SIMPLEX</h1>
+    </div>
+    <div id="oitenca-e-cinco">
+        <form id="tabelaForm">
+            
+            <label for="linhas">Número de Linhas:</label>
+            <input type="number" id="linhas" onmousedown="return selecionarConteudo(this, event)" onclick="return false" name="linhas" min="1" value="3">
+    
+            <label for="colunas">Número de Colunas:</label>
+            <input type="number" id="colunas" onmousedown="return selecionarConteudo(this, event)" onclick="return false" name="colunas" min="1" value="3">
+    
+            <button type="button" class="gerarBotao" onclick="set_rowcol(); gerarTabela(); animarRetorno(this);">Gerar Tabela</button>
+        </form>
+    
+        <div id="tabelaContainer"></div> 
+    </div>
+    <div id="rodape">
+        <div id = "cabecalho-rodape">
+            <table style="width: 100%;">
+                <tr>
+                    <td id="cabecalho-rodape-titulo">
+                        > SOLUÇÃO - PPL:
+                    </td>
+                    <td style="text-align: right; padding-right: 10px;">
+                        <button class="calcularBotao" onclick="animarRetorno(this); enviarFormulario();">Calcular Solução</button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div id = "resposta-rodape"> {{ frase_rodape }} </div>
+    </div>
+
+    <script>
+
+        var linhas = 0;
+        var colunas = 0;
+
+        function set_rowcol (){
+            linhas = document.getElementById('linhas').value;
+            colunas = document.getElementById('colunas').value;
+        }
+
+        function preencherVazio (input_par){
+            if (input_par.value == '') {
+                input_par.value = '0';
+            }
+        }
+
+        function testeIdByName() {
+            if (linhas == 0 || colunas == 0) {
+            alert('É necessário gerar a tabela primeiro');
+            return;
+            }
+
+            // Correção 1: Corrigir o método para obter elemento por ID
+            elemento = document.getElementById('valor_0_0');
+            
+            // Correção 2: Corrigir o método para obter elemento por nome
+            rodape = document.getElementById('resposta-rodape');
+
+            valor = elemento.value;
+            rodape.innerText = 'O VALOR ACHADO FOI: ' + valor;
+
+        }
+
+        function gerarTabela() {
+            document.getElementById('resposta-rodape').innerText = '';
+            // var linhas = document.getElementById('linhas').value;
+            // var colunas = document.getElementById('colunas').value;
+
+            var tabelaHTML = '<table class="tabela-estilizada">';
+            
+            // RESTRIÇÕES
+            for (var i = 0; i < linhas; i++) {
+                tabelaHTML += '<tr>';
+                
+                // COEFICIENTES RESTRIÇÃO
+                for (var j = 0; j < colunas; j++) {
+                    tabelaHTML += '<td id="coef-var">';
+                    tabelaHTML += '<input type="number" onmousedown="return selecionarConteudo(this, event)" onclick="return false" onblur="preencherVazio(this)" value="0" id="valor_' + i + '_' + j + '">';
+                    tabelaHTML += '<td>X_'+(j+1)+'</td>';
+                    if(j != colunas - 1){
+                        tabelaHTML += '<td>+</td>';
+                    }
+                    
+                    tabelaHTML += '</td>';
+                }
+                // Adiciona um seletor de TIPO de RESTRIÇÃO para cada linha
+                tabelaHTML += '<td><select id="tipo_'+i+'">';
+                tabelaHTML += '<option value="<">&le;</option>'; // Menor que
+                tabelaHTML += '<option value=">">&ge;</option>'; // Maior que
+                tabelaHTML += '<option value="=">=</option>';    // Igual
+                tabelaHTML += '</select></td>';
+                
+                // TERMO INDEPENDENTE
+                tabelaHTML += '<td><input type="number" onmousedown="return selecionarConteudo(this, event)" onclick="return false" onblur="preencherVazio(this)" value="0" id="valor_' + i + '_' + colunas + '"></td>';
+                
+                tabelaHTML += '</tr>';
+            }
+
+            // FUNÇÃO OBJETIVO
+            if (colunas != 0 && linhas != 0){
+
+                // TIPO FUNÇÃO OBJETIVO (MAX // MIN)
+                tabelaHTML += '<tr id="funcao-objetivo">';
+                tabelaHTML += '<td><select id="select-fotype">';
+                tabelaHTML += '<option value="Max">Max</option>';
+                tabelaHTML += '<option value="Min">Min</option>';
+                tabelaHTML += '</select></td>';
+
+                // COEFICIENTES FUNÇÃO OBJETIVO
+                for (var j = 0; j < colunas; j++) {
+                    tabelaHTML += '<td id="coef-var">';
+                    tabelaHTML += '<input type="number" onmousedown="return selecionarConteudo(this, event)" onclick="return false" onblur="preencherVazio(this)" value="0" id="valor_' + linhas + '_' + j + '">';
+                    tabelaHTML += '<td>X_'+(j+1)+'</td>';
+                    if(j != colunas - 1){
+                        tabelaHTML += '<td>+</td>';
+                    }
+                    tabelaHTML += '</td>';
+            }
+            }
+            
+            tabelaHTML += '</tr>';
+            tabelaHTML += '</table>';
+
+            document.getElementById('tabelaContainer').innerHTML = tabelaHTML;
+        }
+    
+        function animarRetorno(botao_par) {
+            const botao = document.querySelector("."+botao_par.classList.value);
+
+            botao.style.transform = 'scale(1)';
+            setTimeout(() =>{
+                botao.style.transform = 'scale(1.03)';
+            }, 100);
+
+            setTimeout(() =>{
+                botao.style.transform = '';
+            }, 400);
+        }
+
+        function selecionarConteudo(inputElement, event){
+            inputElement.select();
+
+            if (event.stopPropagation) {
+                event.stopPropagation();
+            }
+
+            return false;
+        }
+        
+        function enviarFormulario() {
+            // var linhas = document.getElementById('linhas').value; // numero de linhas/restrições
+            // var colunas = document.getElementById('colunas').value; // numero de colunas/variaveis
+            var rodape = document.getElementById('resposta-rodape');
+            if(linhas == 0 || colunas == 0){
+                alert('É necessário gerar a tabela primeiro');
+                return;
+            }
+            // rodape.innerText += ' chegou aqui 2';
+            var formData = new FormData();
+            formData.append('linhas', linhas);
+            formData.append('colunas', colunas);
+            // RESTRIÇÕES
+            for (var i = 0; i < linhas; i++) {
+                
+                // COEFICIENTES
+                for (var j = 0; j < colunas; j++) {
+                    var nome = 'valor_' + i + '_' + j;
+                    var inputElement = document.getElementById(nome);
+                    var conteudo = inputElement.value;
+                    conteudo = Number(conteudo);
+
+                    // Adicionar campos escondidos para os conteúdos dos inputs
+                    formData.append(nome, conteudo);
+                }
+                // TERMO INDEPENDENTE // idSEC = coluna
+                var nome_tIndep = 'valor_' + i + '_' + colunas;
+                var inputElement_tIndep = document.getElementById(nome_tIndep);
+                var conteudo_tIndep = inputElement_tIndep.value;
+                conteudo_tIndep = Number(conteudo_tIndep);
+                formData.append(nome_tIndep, conteudo_tIndep);
+
+                // Adiciona um seletor de tipo de inequação para cada linha
+                var nome_tipo = 'tipo_' + i;
+                var inputElement_tipo = document.getElementById(nome_tipo);
+                var conteudo_tipo = inputElement_tipo.value;
+                formData.append(nome_tipo, conteudo_tipo);
+            }
+
+            // FUNÇÃO OBJETIVO
+
+            // TIPO FO
+            
+            var inputElement_tipoFO = document.getElementById('select-fotype');
+            
+            var conteudo_tipoFO = inputElement_tipoFO.value;
+            formData.append('tipo_fo', conteudo_tipoFO);
+
+            
+            // COEFICIENTES FO
+            for (var j = 0; j < colunas; j++) {
+                var nome = 'valor_' + linhas + '_' + j;
+                var inputElement = document.getElementById(nome);
+                var conteudo = inputElement.value;
+                conteudo = Number(conteudo);
+                formData.append(nome, conteudo);
+            }
+            fetch('/', {
+                method: 'POST',
+                body: formData
+            }).then(response => response.text())
+            .then(data => {a;
+                document.getElementById('resposta-rodape').innerHTML = data;
+            });
+        }
+    
+    </script>
+
+</body>
+</html>
